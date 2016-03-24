@@ -1,0 +1,261 @@
+<html>
+	<head>
+		<script src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+		<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+		<script src="http://www.numericjs.com/lib/numeric-1.2.6.min.js"></script>
+		<script type="text/javascript">
+			var count = 0;
+			$( document ).ready(function() {
+				localStorage.setItem("stamps", Array())
+
+				//console.log( "ready!" );
+				$('body').on('touchstart', function(e) {
+					if (e.originalEvent.touches.length === 5)
+					{	
+						log = Object()
+						touches = e.originalEvent.touches
+						//console.log(touches[0].pageX);
+						//console.log(touches[0].pageY);
+						$("#d1").css({top: touches[0].pageY, left: touches[0].pageX, position:'absolute'});
+						//console.log(touches[1].pageX);
+						//console.log(touches[1].pageY);
+						$("#d2").css({top: touches[1].pageY, left: touches[1].pageX, position:'absolute'});
+						//console.log(touches[2].pageX);
+						//console.log(touches[2].pageY);
+						$("#d3").css({top: touches[2].pageY, left: touches[2].pageX, position:'absolute'});
+						//console.log(touches[3].pageX);
+						//console.log(touches[3].pageY);
+						$("#d4").css({top: touches[3].pageY, left: touches[3].pageX, position:'absolute'});
+						//console.log(touches[4].pageX);
+						//console.log(touches[4].pageY);
+						$("#d5").css({top: touches[4].pageY, left: touches[4].pageX, position:'absolute'});
+
+						max_distance = 0
+						points=[]
+						pivots=[]
+						for (i = 0; i < 4; i++)
+						{
+							for (j = i+1; j < 5; j++)
+							{	
+								/*console.log("start")
+								console.log((i+1)+" "+touches[i].pageY+" "+touches[i].pageX)
+								console.log((j+1)+" "+touches[j].pageY+" "+touches[j].pageX)*/
+								dis = vectorDistance(touches[i], touches[j])
+								//console.log(dis);
+								if (dis > max_distance)
+								{
+									console.log("update")
+									max_distance = dis;
+									if (touches[i].pageY > touches[j].pageY)
+									{
+										points=[touches[i], touches[j]]
+										pivots = [i, j]
+									}
+									else
+									{
+										points=[touches[j], touches[i]]
+										pivots = [j, i]
+									}
+								}
+
+							}
+						}
+						//console.log("max distance:")
+						console.log(max_distance)
+						log.max_distance = max_distance
+						//console.log(getAngle(points[0], points[1], max_distance))
+						line1 = $('#line1');
+						line1.attr('x1',points[0].pageX).attr('y1',points[0].pageY).attr('x2',points[1].pageX).attr('y2',points[1].pageY);
+						log.points = Array()
+						revertPivots=0
+						for (i = 0; i < 5; i++){
+							if (pivots.indexOf(i) == -1){
+								if (nonAbsDistanceFromLine(touches[pivots[0]], touches[pivots[1]], touches[i]) < 0){
+									revertPivots++;
+								}
+							}
+						}
+						if (revertPivots > 1){
+							points.reverse()
+							pivots.reverse()
+						}
+						for (i = 0; i < 5; i++){
+							if (pivots.indexOf(i) == -1){
+								data = Object()
+								data.distance = distanceFromLine(touches[pivots[0]], touches[pivots[1]], touches[i])
+								data.height = pointInLineNearestToPoint(touches[pivots[0]], touches[pivots[1]], touches[i])
+								log.points.push(data)
+								console.log("Tocka " + (i+1) + " je oddaljena od diagonale: " + distanceFromLine(touches[pivots[0]], touches[pivots[1]], touches[i]) + " in je visoko: " + pointInLineNearestToPoint(touches[pivots[0]], touches[pivots[1]], touches[i]))
+							}
+						}
+						log.points = sortByKey(log.points, "height")
+						getStampName(log)
+						localStorage.setItem(count, JSON.stringify(log))
+						count++;
+					}
+				});
+			});
+		function vectorDistance(a, b){
+			return Math.sqrt((a.pageY-b.pageY)*(a.pageY-b.pageY)+(a.pageX-b.pageX)*(a.pageX-b.pageX))
+		}
+		function distanceFromLine(a, b, c){
+			return Math.abs(((b.pageY-a.pageY)*c.pageX - (b.pageX-a.pageX)*c.pageY + b.pageX*a.pageY - b.pageY*a.pageX))/vectorDistance(a, b)
+		}
+		function nonAbsDistanceFromLine(a, b, c){
+			return ((b.pageY-a.pageY)*c.pageX - (b.pageX-a.pageX)*c.pageY + b.pageX*a.pageY - b.pageY*a.pageX)/vectorDistance(a, b)
+
+		}
+		function pointInLineNearestToPoint(a, b, c){
+			B = vectorDistance(a, c)
+			A = distanceFromLine(a, b, c)
+			return Math.sqrt(B*B-A*A)
+		}
+		function getAngle(b, a, h){
+			if (a.pageY < b.pageY)
+			{
+				console.log("a<b y")
+				if (a.pageX > b.pageX)
+				{
+					console.log("a>b x")
+					console.log((a.pageX - b.pageX))
+					console.log((a.pageX - b.pageX) / h)
+					return numeric.asin([(a.pageX - b.pageX) / h])
+				}
+			}
+		}
+		function sortByKey(array, key) {
+		    return array.sort(function(a, b) {
+		        var x = a[key]; var y = b[key];
+		        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+		    });
+		}
+		function standardDeviation(values){
+		  var avg = average(values);
+		  
+		  var squareDiffs = values.map(function(value){
+		    var diff = value - avg;
+		    var sqrDiff = diff * diff;
+		    return sqrDiff;
+		  });
+		  
+		  var avgSquareDiff = average(squareDiffs);
+
+		  var stdDev = Math.sqrt(avgSquareDiff);
+		  return stdDev;
+		}
+
+		function maxDeviation(values){
+		  var avg = average(values);
+		  
+		  var diffs = values.map(function(value){
+		    var diff = value - avg;
+		    return diff;
+		  });
+		  
+		  return Math.max.apply(Math, diffs);;
+		}
+
+		function average(data){
+		  var sum = data.reduce(function(sum, value){
+		    return sum + value;
+		  }, 0);
+
+		  var avg = sum / data.length;
+		  return avg;
+		}
+		function getStatistic(count){
+			var mData = Array()
+			for(var i = 0; i<count; i++){
+				mData.push(JSON.parse(localStorage.getItem(i)))
+			}
+			console.log("stdDevMaxDis: "+standardDeviation(mData.map(function(a) {return a.max_distance;})))
+			console.log("stdDevD1: "+standardDeviation(mData.map(function(a) {return a.points[0].distance;})))
+			console.log("stdDevH1: "+standardDeviation(mData.map(function(a) {return a.points[0].height;})))
+			console.log("stdDevD2: "+standardDeviation(mData.map(function(a) {return a.points[1].distance;})))
+			console.log("stdDevH2: "+standardDeviation(mData.map(function(a) {return a.points[1].height;})))
+			console.log("stdDevD3: "+standardDeviation(mData.map(function(a) {return a.points[2].distance;})))
+			console.log("stdDevH3: "+standardDeviation(mData.map(function(a) {return a.points[2].height;})))
+
+			console.log("maxDevMaxDis: "+maxDeviation(mData.map(function(a) {return a.max_distance;})))
+			console.log("maxDevD1: "+maxDeviation(mData.map(function(a) {return a.points[0].distance;})))
+			console.log("maxDevH1: "+maxDeviation(mData.map(function(a) {return a.points[0].height;})))
+			console.log("maxDevD2: "+maxDeviation(mData.map(function(a) {return a.points[1].distance;})))
+			console.log("maxDevH2: "+maxDeviation(mData.map(function(a) {return a.points[1].height;})))
+			console.log("maxDevD3: "+maxDeviation(mData.map(function(a) {return a.points[2].distance;})))
+			console.log("maxDevH3: "+maxDeviation(mData.map(function(a) {return a.points[2].height;})))
+		}
+		function storeStamp(name){
+			var mData = Array()
+			for(var i = 0; i<count; i++){
+				mData.push(JSON.parse(localStorage.getItem(i)))
+			}
+			stamp = Object()
+			stamp.name = name
+			stamp.distance = average(mData.map(function(a) {return a.max_distance;}))
+			stamp.distance1 = average(mData.map(function(a) {return a.points[0].distance;}))
+			stamp.height1 = average(mData.map(function(a) {return a.points[0].height;}))
+			stamp.distance2 = average(mData.map(function(a) {return a.points[1].distance;}))
+			stamp.height2 = average(mData.map(function(a) {return a.points[1].height;}))
+			stamp.distance3 = average(mData.map(function(a) {return a.points[2].distance;}))
+			stamp.height3 = average(mData.map(function(a) {return a.points[2].height;}))
+			count = 0
+
+			stored = localStorage.getItem("stamps")
+			if (stored === "")
+			{
+				storedStamps = Array()
+			}
+			else{
+				storedStamps = JSON.parse(stored)
+			}
+			storedStamps.push(stamp)
+
+			localStorage.setItem("stamps", JSON.stringify(storedStamps))
+		}
+		function getStampName(stamp){
+			stored = localStorage.getItem("stamps")
+			if (stored === "")
+			{
+				return ""
+			}
+			else{
+				stamped = Object()
+				storedStamps = JSON.parse(stored)
+				for(var i = 0;i<storedStamps.length; i++){
+					norm = stamp.max_distance/storedStamps[i].distance
+					console.log("norm"+norm)
+					var calcDistance = 0
+					calcDistance = calcDistance + Math.abs(stamp.points[0].distance*norm-storedStamps[i].distance1)
+					calcDistance = calcDistance + Math.abs(stamp.points[1].distance*norm-storedStamps[i].distance2)
+					calcDistance = calcDistance + Math.abs(stamp.points[2].distance*norm-storedStamps[i].distance3)
+					calcDistance = calcDistance + Math.abs(stamp.points[0].height*norm-storedStamps[i].height1)
+					calcDistance = calcDistance + Math.abs(stamp.points[1].height*norm-storedStamps[i].height2)
+					calcDistance = calcDistance + Math.abs(stamp.points[2].height*norm-storedStamps[i].height3)
+					console.log(storedStamps[i].name+" "+calcDistance)
+					if (calcDistance<150)
+					{
+						console.log("Stempiljka je: " + storedStamps[i].name)
+					}
+				}
+
+			}
+			
+		}
+		</script>
+		<style>
+		.d{
+			/*background-color: black;*/
+			height: 5px;
+			width: 5px;
+		}
+		</style>
+	</head>
+	<body>
+		<div id="d1" class="d">1</div>
+		<div id="d2" class="d">2</div>
+		<div id="d3" class="d">3</div>
+		<div id="d4" class="d">4</div>
+		<div id="d5" class="d">5</div>
+		<svg width="100%" height="100%"><line id="line1" style="stroke:rgb(255,0,0);stroke-width:2"/></svg>
+	</body>
+</html>
