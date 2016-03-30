@@ -1,0 +1,32 @@
+<html>
+	<haed>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</haed>
+	<body>
+		<ul>
+		</ul>
+		<a href="login.html">Login</a>
+		<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+		<script src="js/gun.js"></script>
+		<script type="text/javascript">
+		$( document ).ready(function() {
+			var gun = Gun("http://10.103.6.37:8080");
+			//var users = gun
+			var people = gun.get('people');
+
+			console.log("pisi")
+			people.map(function(person, id){
+			console.log("person")
+			  var li = $('#' + id).get(0) || $('<li>').attr('id', id).appendTo('ul');
+				if(person.name){
+					console.log(person.peaks)
+					$(li).text(person.name+": "+person.peaks);
+				} else {
+					$(li).hide();
+				}
+			});
+		});
+		</script>
+
+	</body>
+</html>

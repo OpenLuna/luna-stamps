@@ -1,0 +1,57 @@
+<html>
+	<haed>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</haed>
+	<body>
+		<form class="register">
+			Email:<input id="email" type="text"><br>
+			Fullname:<input id="name" type="text"><br>
+			Password<input id="password" type="password"><br>
+			<button>Register</button>
+		</form>
+		<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+		<script src="js/gun.js"></script>
+		<script src="js/core-min.js"></script>
+		<script src="js/sha256-min.js"></script>
+		<script type="text/javascript">
+		var gun = Gun("http://10.103.6.37:8080")
+			$('.register').on('submit', function(event){
+				isUser = false
+				event.preventDefault();
+				user = gun.get('people').get($("#email").val())
+				user.val(function(usr){
+					if (usr.name !== "undefined" && !isUser)
+					{
+						isUser=true;
+				
+						alert("Uporabnik s tem emailom že obstaja")
+						window.location.replace('reg.html');
+					}
+					else
+					{
+						console.log("grem klicat callback");
+						createUser();
+					}
+				},createUser());
+				function createUser(){
+					console.log("create user 1")
+					if (!isUser)
+					{
+						console.log("create user 1")
+						isUser=true
+						console.log("there is not that user");
+						var user = gun.get($('#email').val()).put({name: $('#name').val(), email: $('#email').val(), peaks:JSON.stringify([""]), password:CryptoJS.SHA256($('#password').val()).toString(CryptoJS.enc.Base64)})
+
+						var people = gun.get('people');
+						people.set(user)
+
+						sessionStorage.setItem('user', $('#email').val())
+						window.location.replace('hribi.html');
+					}
+				};
+			});
+
+		</script>
+
+	</body>
+</html>

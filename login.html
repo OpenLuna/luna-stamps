@@ -1,0 +1,44 @@
+<html>
+	<haed>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</haed>
+	<body>
+		<form class="login">
+			Email:<input id="email" type="text"><br>
+			Password:<input id="password" type="password"><br>
+			<button>Login:</button>
+			<br><br>
+			<a href="reg.html">Registriraj se</a>
+		</form>
+		<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+		<script src="js/gun.js"></script>
+		<script src="js/core-min.js"></script>
+		<script src="js/sha256-min.js"></script>
+		<script type="text/javascript">
+		var gun = Gun("http://10.103.6.37:8080")
+			$('.login').on('submit', function(event){
+				event.preventDefault();
+				var isUser = false;
+				user = gun.get('people').get($("#email").val())
+				user.val(function(usr){
+					isUser = true;
+					if (usr.password == CryptoJS.SHA256($('#password').val()).toString(CryptoJS.enc.Base64))
+					{
+						sessionStorage.setItem('user', $('#email').val())
+						window.location.replace('hribi.html');
+					}
+					else
+					{
+						alert("Geslo ne ustreza uporabniku")
+						//window.location.replace('login.html');
+					}
+				});
+				if(!isUser)
+					alert("Email ne ustreza nobenemu uporabniku")
+
+			});
+
+		</script>
+
+	</body>
+</html>

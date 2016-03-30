@@ -1,0 +1,26 @@
+<html>
+	<haed>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</haed>
+	<body>
+		<ul>
+		</ul>
+		<a href="check.html">Dodaj</a>
+		<a href="login.html">Login</a>
+		<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+		<script src="js/gun.js"></script>
+		<script type="text/javascript">
+		user = sessionStorage.getItem('user')
+		var userObj = Gun("http://10.103.6.37:8080").get("people").get(user).path("peaks");
+			userObj.val(function(peaks){
+				list = JSON.parse(peaks)
+				for (i=0; i<list.length; i++){
+					if (list[i] !== "")
+						$( "ul" ).append("<li>"+ list[i] +"</li>");
+				}
+			})
+
+		</script>
+
+	</body>
+</html>

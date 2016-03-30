@@ -1,0 +1,56 @@
+<html>
+	<haed>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+		<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+		
+		<script type="text/javascript">
+
+
+		</script>
+		<style>
+		.d{
+			background-color: black;
+			height: 100%;
+			width: 100%;
+			color: red;
+			font-size: 36px;
+
+		}
+		</style>
+	</haed>
+	<body>
+		<div id="stamp" class="d"></div>
+		<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+		<script src="js/gun.js"></script>
+		<script src="js/stamps.js"></script>
+		<script src="js/luna-stamp.js"></script>
+		<script type="text/javascript">
+			user = sessionStorage.getItem('user')
+			var gun = Gun("http://10.103.6.37:8080").get("people").get(user);
+			//var stamps = Gun().get('stamps')
+			$("#stamp").lunastamps.init(function(name){addPeak(gun, name)})
+			function addPeak(userObj, nameOfPeak){
+				if (userObj.peaks == '[""]')
+					userObj.put({peaks:JSON.stringify([nameOfPeak])})
+				else
+				{
+					userObj.val(function(peaks){
+						console.log(peaks.peaks)
+						list = JSON.parse(peaks.peaks)
+						list.push(nameOfPeak)
+						console.log(JSON.stringify(list))
+						//peaks.peaks = JSON.stringify(list)
+						userObj.put({peaks:JSON.stringify([ ...new Set(list)])})
+					})
+
+				}
+				console.log(name + "adding")
+				//peaksObj.put({name:nameOfPeak})
+				window.location.replace('hribi.html');
+			}
+
+		</script>
+
+	</body>
+</html>
